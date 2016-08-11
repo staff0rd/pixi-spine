@@ -1,8 +1,8 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}(g.PIXI || (g.PIXI = {})).spine = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /**
  * @namespace PIXI.spine
  */
-module.exports = PIXI.spine = {
+module.exports = PIXI.spine = { // "PIXI.spine" assignment is here for people/plugins who use plugin both through require and as a plugin.
     Spine:          require('./Spine'),
     SpineRuntime:   require('./SpineRuntime'),
     loaders:        require('./loaders')
@@ -3941,6 +3941,7 @@ module.exports = {
 },{}],45:[function(require,module,exports){
 var spine = require('../SpineRuntime');
 var atlasParser = require('../loaders/atlasParser');
+var TransformBase = PIXI.TransformBase || PIXI.TransformManual;
 
 /* Esoteric Software SPINE wrapper for pixi.js */
 spine.Bone.yDown = true;
@@ -4186,24 +4187,25 @@ Spine.prototype.update = function (dt)
                     transform.version = transform._dirtyVersion;
                     transform.isStatic = true;
                     transform.operMode = 0;
-                } else
-                if (PIXI.TransformManual) {
-                    //PIXI v4.0
-                    if (transform.position) {
-                        transform = new PIXI.TransformManual();
-                        slotContainer.transform = transform;
-                    }
-                    lt = transform.localTransform;
                 } else {
-                    //PIXI v4.0rc
-                    if (!transform._dirtyLocal) {
-                        transform = new PIXI.TransformStatic();
-                        slotContainer.transform = transform;
+                    if (TransformBase) {
+                        //PIXI v4.0
+                        if (transform.position) {
+                            transform = new PIXI.TransformBase();
+                            slotContainer.transform = transform;
+                        }
+                        lt = transform.localTransform;
+                    } else {
+                        //PIXI v4.0rc
+                        if (!transform._dirtyLocal) {
+                            transform = new PIXI.TransformStatic();
+                            slotContainer.transform = transform;
+                        }
+                        lt = transform.localTransform;
+                        transform._dirtyParentVersion = -1;
+                        transform._dirtyLocal = 1;
+                        transform._versionLocal = 1;
                     }
-                    lt = transform.localTransform;
-                    transform._dirtyParentVersion = -1;
-                    transform._dirtyLocal = 1;
-                    transform._versionLocal = 1;
                 }
                 slot.bone.matrix.copy(lt);
                 lt.tx += slot.bone.skeleton.x;
@@ -4563,7 +4565,8 @@ module.exports = function (baseUrl, crossOrigin) {
     }
 };
 
-},{"../SpineRuntime":43}]},{},[1])
+},{"../SpineRuntime":43}]},{},[1])(1)
+});
 
 
 //# sourceMappingURL=pixi-spine.js.map
